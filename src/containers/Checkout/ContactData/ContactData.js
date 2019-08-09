@@ -91,11 +91,6 @@ class ContactData extends Component {
                         {value: 'ubereats', displayValue: 'Uber Eats'},
                         {value: 'eatIn', displayValue: 'Eat-In'},
                         {value: 'pickup', displayValue: 'Pickup'},
-
-
-
-
-
                     ]
                 },
                 value: 'fastest',

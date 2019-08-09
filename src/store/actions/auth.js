@@ -1,17 +1,17 @@
-// authentication relation actions
 import * as actionTypes from './actionTypes';
 import axios from 'axios';
 
-export const authStart = () => {
+export const authStart = (authData) => {
     return {
         type: actionTypes.AUTH_START
     };
 }
 
-export const authSuccess = (authData) => {
+export const authSuccess = (token, userId) => {
     return {
         type: actionTypes.AUTH_SUCCESS,
-        authData: authData
+        idToken: token,
+        userId: userId,
     };
 }
 
@@ -21,24 +21,42 @@ export const authFail = (error) => {
         error: error
     };
 }
+export const logout = () => {
+    return {
+        type: actionTypes.AUTH_LOGOUT
+    };
+}
 
-export const auth = (email, password) => {
+export const checkAuthTimeout = (expirationTime) => {
     return dispatch => {
-      dispatch(authStart());
-    //   Firebase Request Body Payload: https://firebase.google.com/docs/reference/rest/auth
-      const authData = {
-          email: email,
-          password: password,
-          returnSecureToken: true
-      }
-      axios.post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=[AIzaSyAmbLILJFUAgYTUNIFaybIiLkWpyBl0TTI]', authData)
-      .then(response => {
-          console.log(response);
-          dispatch(authSuccess(response.data));      
-        })
-      .catch(err => {
-        console.log(err);
-        dispatch(authFail());
-      });
+        setTimeout(() => {
+            dispatch(logout());
+        }, expirationTime * 1000);
+    };
+};
+
+//   Firebase Request Body Payload: https://firebase.google.com/docs/reference/rest/auth
+export const auth = (email, password, isSignup) => {
+    return dispatch => {
+        dispatch(authStart());
+        const authData = {
+            email: email,
+            password: password,
+            returnSecureToken: true
+        };
+        let url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmbLILJFUAgYTUNIFaybIiLkWpyBl0TTI'
+        if (!isSignup) {
+            url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAmbLILJFUAgYTUNIFaybIiLkWpyBl0TTI'
+        }
+        axios.post(url, authData)
+            .then(response => {
+                console.log(response.data);
+                dispatch(authSuccess(response.data.idToken, response.data.localId));
+                dispatch(checkAuthTimeout(response.data.expiresIn));
+            })
+            .catch(err => {
+                console.log(err);
+                dispatch(authFail(err.response.data.error));
+            });
     };
 };

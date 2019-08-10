@@ -66,3 +66,21 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+### `firebase rules` modification improves stored data protection
+
+Local storage can be compromised by cross-side scripting attacks, but fortunately this is prevented by React.  Nonetheless, 
+for added security these rules were added to the backend:
+{
+  "rules": {
+    "ingredients": {
+    ".read": "true",
+    ".write": "true",      
+    },
+      "orders": {
+        ".read": "auth != null",
+          ".write": "auth != null",
+            ".indexOn": ["userId"]
+      }
+  }
+}
